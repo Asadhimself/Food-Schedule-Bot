@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, ChatType
 
 from keyboards.inline.days import days
 from keyboards.inline.edit import edit_callback
@@ -10,7 +10,7 @@ from loader import dp, db
 from states.what_to_eat import FindMeFood
 
 
-@dp.message_handler(Command("today"))
+@dp.message_handler(Command("today"), chat_type=[ChatType.PRIVATE])
 async def day_command(message: types.Message):
     await message.answer("Выберите день:", reply_markup=days)
     await FindMeFood.EnterDay.set()
@@ -39,8 +39,8 @@ async def find_food(call: CallbackQuery, state: FSMContext):
         edit_params = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="Изменить время", callback_data=f"edit:time:{day}:{when}"),
-                    InlineKeyboardButton(text="Изменить еду", callback_data=f"edit:food:{day}:{when}"),
+                    InlineKeyboardButton(text="Изменить время", callback_data=f"edit:time:{when}:{day}"),
+                    InlineKeyboardButton(text="Изменить еду", callback_data=f"edit:food:{when}:{day}"),
                 ]
             ]
         )
@@ -57,5 +57,5 @@ async def edit_food(call: CallbackQuery, callback_data: dict):
 @dp.callback_query_handler(edit_callback.filter(action="food"))
 async def edit_food(call: CallbackQuery, callback_data: dict, state: FSMContext):
     await call.answer(cache_time=10)
-    await call.message.answer(f"Изменения на {callback_data.get('when')}"
+    await call.message.answer(f"Изменения на {callback_data.get('schedule_when')}"
                               "Хорошо! пришлите сообщение и я поменяю на него в вашем графика")
