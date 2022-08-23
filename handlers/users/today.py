@@ -57,4 +57,5 @@ async def edit_food(call: CallbackQuery, callback_data: dict):
 @dp.callback_query_handler(edit_callback.filter(action="food"))
 async def edit_food(call: CallbackQuery, callback_data: dict, state: FSMContext):
     await call.answer(cache_time=10)
-    await call.message.answer("Хорошо! пришлите сообщение и я поменяю на него в вашем графика")
+    await call.message.answer(f"Изменения на {callback_data.get('when')}"
+                              "Хорошо! пришлите сообщение и я поменяю на него в вашем графика")
