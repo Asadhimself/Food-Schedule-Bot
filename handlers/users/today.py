@@ -10,7 +10,7 @@ from loader import dp, db
 from states.what_to_eat import FindMeFood
 
 
-@dp.message_handler(Command("today"), chat_type=[ChatType.PRIVATE])
+@dp.message_handler(Command("today"), state='*', chat_type=[ChatType.PRIVATE])
 async def day_command(message: types.Message):
     await message.answer("Выберите день:", reply_markup=days)
     await FindMeFood.EnterDay.set()
@@ -32,7 +32,7 @@ async def find_food(call: CallbackQuery, state: FSMContext):
         day = data.get("day")
         when = data.get("when")
         user = call.message.chat.id
-        today = await db.send_food(when, day)
+        today = await db.send_food(when, day, user)
         await call.message.edit_text(f"{day} / {when}:\n"
                                      f"{today}\n"
                                      "Приятного вам аппетита ")
@@ -46,16 +46,3 @@ async def find_food(call: CallbackQuery, state: FSMContext):
         )
         await call.message.edit_reply_markup(reply_markup=edit_params)
         await state.finish()
-
-
-@dp.callback_query_handler(edit_callback.filter(action="time"))
-async def edit_food(call: CallbackQuery, callback_data: dict):
-    print(callback_data)
-    await call.answer("Эта функция пока что недоступна!", show_alert=True)
-
-
-@dp.callback_query_handler(edit_callback.filter(action="food"))
-async def edit_food(call: CallbackQuery, callback_data: dict, state: FSMContext):
-    await call.answer(cache_time=10)
-    await call.message.answer(f"Изменения на {callback_data.get('schedule_when')}"
-                              "Хорошо! пришлите сообщение и я поменяю на него в вашем графика")

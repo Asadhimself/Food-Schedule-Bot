@@ -57,8 +57,8 @@ class Database:
         return sql, tuple(parameters.values())
 
     async def add_user(self, full_name, username, telegram_id):
-            sql = "INSERT INTO Users (full_name, username, telegram_id) VALUES($1, $2, $3) returning *"
-            return await self.execute(sql, full_name, username, telegram_id, fetchrow=True)
+        sql = "INSERT INTO Users (full_name, username, telegram_id) VALUES($1, $2, $3) returning *"
+        return await self.execute(sql, full_name, username, telegram_id, fetchrow=True)
 
     async def select_all_users(self):
         sql = "SELECT * FROM Users"
@@ -83,6 +83,23 @@ class Database:
     async def drop_users(self):
         await self.execute("DROP TABLE Users", execute=True)
 
-    async def send_food(self, when, day):
-        sql = f'SELECT "{when}" FROM default_food WHERE day = $1'
+    async def set_private_table(self, telegram_id):
+        table_name = f"user_{str(telegram_id)}"
+        sql = f'CREATE TABLE IF NOT EXISTS {table_name} AS SELECT * FROM default_food'
+        return await self.execute(sql, execute=True)
+
+    async def send_food(self, when, day, telegram_id):
+        table_name = f"user_{str(telegram_id)}"
+        sql = f'''SELECT "{when}"
+        FROM {table_name}
+        WHERE day=$1
+        '''
         return await self.execute(sql, day, fetchval=True)
+
+    async def change_food(self, when, day, telegram_id, changes):
+        table_name = f"user_{str(telegram_id)}"
+        sql = f'''Update {table_name}
+        SET "{when}"=$1
+        WHERE day=$2
+        '''
+        return await self.execute(sql, changes, day, execute=True)
