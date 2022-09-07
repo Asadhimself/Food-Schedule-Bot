@@ -1,15 +1,16 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Command
+from aiogram.dispatcher.filters import Command, Text
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, ChatType
+from aiogram.utils.markdown import hbold, hitalic, quote_html
 
 from keyboards.inline.days import days
-from keyboards.inline.edit import edit_callback
-from keyboards.inline.schedule import schedule
+from keyboards.inline.schedule import schedule  # , back_callback
 from loader import dp, db
 from states.what_to_eat import FindMeFood
 
 
+@dp.message_handler(Text("🗓 Расписание на сегодня"))
 @dp.message_handler(Command("today"), state='*', chat_type=[ChatType.PRIVATE])
 async def day_command(message: types.Message):
     await message.answer("Выберите день:", reply_markup=days)
@@ -33,16 +34,25 @@ async def find_food(call: CallbackQuery, state: FSMContext):
         when = data.get("when")
         user = call.message.chat.id
         today = await db.send_food(when, day, user)
-        await call.message.edit_text(f"{day} / {when}:\n"
-                                     f"{today}\n"
-                                     "Приятного вам аппетита ")
+        text = "".join([hbold(f"⌛️ {day} / {when}:\n\n"),
+                        hitalic(f"🥣 {quote_html(today)}\n\n"),
+                        hbold("Приятного вам аппетита 🍽❤\n\n"),
+                        "➡️Для просмотра другого дня нажмите /today"
+                        ])
+        await call.message.edit_text(text=text)
         edit_params = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="Изменить время", callback_data=f"edit:time:{when}:{day}"),
-                    InlineKeyboardButton(text="Изменить еду", callback_data=f"edit:food:{when}:{day}"),
+                    InlineKeyboardButton(text="Изменить время 🔄🕟", callback_data=f"edit:time:{when}:{day}"),
+                    InlineKeyboardButton(text="Изменить еду 🔄🍜", callback_data=f"edit:food:{when}:{day}"),
                 ]
             ]
         )
         await call.message.edit_reply_markup(reply_markup=edit_params)
         await state.finish()
+
+# @dp.callback_query_handler(back_callback.filter(action="back"), state='*')
+# async def go_back(call: CallbackQuery, state: FSMContext):
+#     await call.message.edit_text(f"{call.data}\nВыберите тип перекуса:")
+#     await call.message.edit_reply_markup(reply_markup=schedule)
+#     await state.reset_state(with_data=False)

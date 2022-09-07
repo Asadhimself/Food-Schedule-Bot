@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.filters.builtin import CommandStart
 
-from data.config import ADMINS
+from keyboards.default.main_menu import main_menu
 from loader import dp, db, bot
 
 
@@ -10,7 +10,11 @@ async def bot_start(message: types.Message):
     try:
         await db.add_user(message.from_user.full_name, message.from_user.username, message.from_user.id)
         await db.set_private_table(message.from_user.id)
-        await message.answer(f"Привет, {message.from_user.full_name}!")
-    except Exception as err:
-        await bot.send_message(ADMINS[0], f"{err.__class__.__name__}: {err} \n"
-                                          f"Пользователь: {message.from_user}")
+        await message.answer(f"👋Привет, {message.from_user.full_name}!\n"
+                             f"Я уже создал для вас ваше личное расписание!🗓\n\n"
+                             f"Проверить его вы можете по команде /today\n\n"
+                             f"И получить справку о боте по команде /help",
+                             reply_markup=main_menu)
+    except:
+        await message.answer(f"👋 Привет, {message.from_user.full_name}!\n"
+                             f"Я вас помню. С возвращением ❤️", reply_markup=main_menu)

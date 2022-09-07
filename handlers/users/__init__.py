@@ -1,7 +1,10 @@
-from . import help
-from . import start
-# from . import echo
-from .today import dp
+from .about import dp
 from .changes import dp
+from .commands_info import dp
+from .feedback import dp
+from .help import dp
+from .restart import dp
+from .start import dp
+from .today import dp
 
 __all__ = ["dp"]

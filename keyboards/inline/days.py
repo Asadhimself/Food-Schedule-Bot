@@ -16,7 +16,7 @@ days = InlineKeyboardMarkup(
             InlineKeyboardButton(text="Суббота", callback_data="Суббота"),
         ],
         [
-            InlineKeyboardButton(text="Воскресенье", callback_data="days:Воскресенье")
+            InlineKeyboardButton(text="Воскресенье", callback_data="Воскресенье")
         ]
     ]
 )
